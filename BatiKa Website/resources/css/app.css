@@ -1,0 +1,1189 @@
+/* =========================================
+   1. IMPORTS & FONTS
+   ========================================= */
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
+
+/* =========================================
+   2. VARIABLES (DESIGN SYSTEM)
+   ========================================= */
+:root {
+    /* Color Palette */
+    --color-primary: #C89D66;        /* Button gold-brown */
+    --color-primary-dark: #A87E4F;   /* Hover state */
+    --color-bg: #F5EFE6;             /* Soft beige background */
+    --color-bg-light: #FAF7F3;       /* Section background lighter */
+    --color-nav: rgba(250, 247, 243, 0.8);
+    --color-text: #3B2F2F;           /* Main dark text */
+    --color-text-light: #6B5E57;     /* Secondary text */
+    --color-border: #E2D5C5;
+    --color-accent: #B58855;
+    --color-star: #F3CA56;
+
+    /* Typography */
+    --font-body: 'Poppins', serif;
+    --fs-hero-title: 52px;
+    --fs-section-title: 34px;
+    --fs-body: 16px;
+
+    /* Spacing & Radius */
+    --radius-card: 16px;
+    --radius-button: 30px;
+}
+
+/* =========================================
+   3. GLOBAL STYLES & UTILITIES
+   ========================================= */
+body {
+    background-color: var(--color-bg);
+    font-family: var(--font-body);
+    color: var(--color-text);
+    overflow-x: hidden; /* Mencegah horizontal scroll */
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Utility: Letter Spacing */
+.ls-1 { letter-spacing: 1px; }
+.ls-2 { letter-spacing: 2px; }
+.ls-wider { letter-spacing: 2px; }
+
+/* Utility: Colors Overrides */
+.text-primary { color: var(--color-primary) !important; }
+.bg-light-custom { background-color: var(--color-bg-light) !important; }
+
+/* Utility: Helper Opacity */
+.opacity-10 { opacity: 0.1 !important; }
+
+/* Utility: Transition */
+.transition-all { transition: all 0.3s ease; }
+
+/* =========================================
+   4. ANIMATIONS
+   ========================================= */
+/* Floating (Melayang) */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+.floating-anim { animation: float 6s ease-in-out infinite; }
+.floating-anim-delayed { 
+    animation: float 5s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+
+/* ========================
+   NAVBAR DYNAMIC STYLING
+   ======================== */
+
+.navbar-glass {
+    /* State Awal (Belum di-scroll): Transparan Total */
+    background-color: transparent;
+    backdrop-filter: none;
+    border-bottom: 1px solid transparent;
+    box-shadow: none;
+    transition: all 0.4s ease; /* Transisi halus saat berubah warna */
+    padding-top: 1.5rem !important; /* Sedikit lebih lebar saat di atas */
+    padding-bottom: 1.5rem !important;
+}
+
+/* State Scrolled (Saat di-scroll ke bawah): Efek Kaca Muncul */
+.navbar-glass.scrolled {
+    background-color: rgba(255, 255, 255, 0.85); /* Putih transparan */
+    backdrop-filter: blur(12px); /* Blur aktif */
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding-top: 0.8rem !important; /* Mengecil (shrink) agar rapi */
+    padding-bottom: 0.8rem !important;
+}
+
+/* Styling Link (Tetap sama, hanya animasi garis) */
+.nav-link {
+    color: var(--color-text);
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--color-primary);
+}
+
+/* Navbar Underline Animation */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    bottom: 5px;
+    background-color: var(--color-primary);
+    transition: all 0.3s ease;
+    width: 0;
+}
+
+/* Desktop: Center Expand to 100% */
+@media (min-width: 992px) {
+    .nav-link::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .nav-link:hover::after, .nav-link.active::after {
+        width: 100%;
+    }
+}
+
+/* Mobile: Left align, small width (prevent full width) */
+@media (max-width: 991px) {
+    .nav-link::after {
+        left: 0; /* Align start */
+        margin-left: 10px; /* Slight offset if needed, or 0 */
+    }
+    .nav-link:hover::after, .nav-link.active::after {
+        width: 30px; /* Small fixed indicator on mobile */
+    }
+}
+
+/* Icon Hover */
+.nav-icon { display: inline-block; transition: transform 0.3s ease; }
+.nav-icon:hover { transform: translateY(-2px); color: var(--color-primary) !important; }
+
+/* Profile Pic Hover */
+.profile-link img { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.profile-link:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+    border-color: var(--color-primary) !important;
+}
+
+/* FIX MOBILE MENU: 
+   Saat di HP, jika tombol menu diklik, background harus jadi putih 
+   supaya tulisan menu terbaca jelas. */
+@media (max-width: 991px) {
+    .navbar-glass .navbar-collapse {
+        background-color: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+}
+/* =========================================
+   6. HERO SECTION
+   ========================================= */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-btn {
+    background-color: var(--color-primary);
+    color: #fff;
+    border-radius: var(--radius-button);
+}
+
+.hero-btn:hover {
+    background-color: var(--color-primary-dark);
+    color: #fff;
+}
+
+/* Responsive Hero Image */
+@media (max-width: 991px) {
+    .hero-image-wrapper img {
+        max-height: 350px !important;
+        border-radius: 40px !important;
+    }
+    .display-3 { font-size: 2.5rem; }
+}
+
+/* =========================================
+   7. ABOUT US SECTION
+   ========================================= */
+.about-us-section {
+    background-color: #fff;
+}
+
+/* Dekorasi Garis Bawah Judul */
+.title-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+}
+
+/* =========================================
+   FEATURED PRODUCTS (FIXED & RESIZED)
+   ========================================= */
+
+/* 1. WRAPPER GAMBAR (UKURAN & RESPONSIF) */
+.product-image-wrapper {
+    position: relative;
+    width: 100%;
+    
+    /* --- KUNCI PERUBAHAN DISINI --- */
+    /* Mengubah rasio menjadi 1/1 (Kotak Sempurna).
+       Ini membuat wrapper lebih pendek daripada sebelumnya (3/4).
+       Jika ingin lebih pendek lagi (gepeng), ganti jadi 4/3 */
+    aspect-ratio: 1/1; 
+    
+    background-color: #f0f0f0; /* Warna loading sementara */
+    overflow: hidden;
+}
+
+.product-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    
+    /* --- TETAP FULL --- */
+    /* 'cover' memastikan gambar memenuhi seluruh area kotak 1:1 tadi 
+       tanpa ada yang gepeng, bagian atas/bawah yang berlebih akan di-crop otomatis */
+    object-fit: cover; 
+    
+    /* Memastikan fokus gambar di tengah-tengah */
+    object-position: center; 
+    
+    transition: transform 0.6s ease;
+    display: block;
+}
+
+/* Zoom effect saat hover (tetap ada) */
+.product-card:hover .product-image-wrapper img {
+    transform: scale(1.08);
+}
+
+/* 2. PERBAIKAN ICON SIMETRIS */
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    padding: 0 !important; /* Hapus padding bawaan bootstrap */
+    display: flex !important; /* Wajib flex */
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Reset line height icon */
+}
+
+.icon-btn i {
+    font-size: 1.2rem; /* Ukuran icon pas */
+    display: flex; /* Pastikan icon juga flex agar center */
+}
+
+
+/* 3. STYLE OVERLAY (ANIMASI) */
+.overlay-actions {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(59, 47, 47, 0.2);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10; /* Di atas gambar */
+}
+
+/* Muncul saat hover (Hanya berlaku jika elementnya ada/tidak d-none) */
+.product-card:hover .overlay-actions {
+    opacity: 1;
+}
+
+/* Animasi Tombol Naik */
+.overlay-actions .btn {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .overlay-actions .btn {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.product-card:hover .overlay-actions .btn:nth-child(2) {
+    transition-delay: 0.1s;
+}
+
+/* Hover tombol overlay */
+.overlay-actions .btn:hover {
+    background-color: var(--color-primary);
+    color: white !important;
+}
+.overlay-actions .btn:hover i {
+    color: white !important;
+}
+
+@media (max-width: 576px) {
+    .product-image-wrapper {
+        /* Di HP jadi landscape sedikit agar tidak makan tempat scroll */
+        aspect-ratio: 4/3 !important; 
+    }
+}
+
+/* =========================================
+   9. COLLECTIONS (MODERN CARD)
+   ========================================= */
+.collection-card {
+    position: relative;
+    min-height: 400px;
+    border: none;
+    cursor: pointer;
+    overflow: hidden; 
+}
+
+/* Background Image Strategy (Pseudo-element) */
+.collection-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Variants */
+.card-classic::before {
+    background-image: linear-gradient(180deg, rgba(178, 138, 101, 0.9) 0%, rgba(139, 94, 60, 0.95) 100%), url('/images/overlay.png'); 
+}
+
+.card-luxury::before {
+    background-image: linear-gradient(180deg, rgba(190, 150, 90, 0.9) 0%, rgba(160, 120, 60, 0.95) 100%), url('/images/overlay.png'); 
+}
+
+/* Hover Effects */
+.collection-card:hover::before { transform: scale(1.1); }
+
+.card-content {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.collection-card:hover .card-content { transform: translateY(-5px); }
+
+.collection-card:hover .btn {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(2px);
+}
+
+/* =========================================
+   10. CHOOSE US & REVIEWS
+   ========================================= */
+/* Feature Card */
+.feature-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.icon-wrapper {
+    width: 70px; height: 70px;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+}
+
+.feature-card:hover .icon-wrapper {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Review Card */
+.review-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+}
+
+.review-card .border-top { border-color: rgba(0,0,0,0.05) !important; }
+
+/* =========================================
+   11. FOOTER
+   ========================================= */
+.footer {
+    background-color: var(--color-text);
+    color: #fff;
+}
+
+.footer-link:hover {
+    color: var(--color-primary) !important;
+    padding-left: 5px;
+}
+
+/* Social Icons */
+.social-icon {
+    width: 38px; height: 38px;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary) !important;
+    transform: translateY(-3px);
+}
+
+/* Form Inputs */
+.footer .form-control:focus {
+    background-color: transparent;
+    border-color: var(--color-primary);
+    box-shadow: none;
+    color: white;
+}
+
+.footer .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+
+
+/* =========================================
+   PRODUCT PAGE (MODERN REDESIGN)
+   ========================================= */
+
+/* 1. Gallery Layout */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Hilangkan scrollbar di area thumbnail */
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.thumbnail-item {
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    opacity: 0.6;
+}
+
+.thumbnail-item:hover,
+.thumbnail-item.active {
+    border-color: var(--color-primary); /* Border emas saat aktif */
+    opacity: 1;
+}
+
+/* 2. Sticky Sidebar Effect */
+/* Ini membuat kolom kanan diam saat kolom kiri di-scroll */
+.sticky-product-details {
+    position: sticky; 
+    top: 100px; /* Jarak dari atas layar */
+    z-index: 10;
+}
+
+/* 3. Color Options */
+.color-option {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 1px #ddd; /* Ring halus luar */
+    transition: all 0.2s;
+}
+
+.color-option.active {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primary); /* Ring ganda saat aktif */
+    transform: scale(1.1);
+}
+
+/* 4. Custom Quantity Input */
+.quantity-box {
+    border-color: #e0e0e0 !important;
+}
+.quantity-box input:focus {
+    box-shadow: none;
+}
+
+/* 5. Accordion Styling */
+.accordion-button {
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+.accordion-button:not(.collapsed) {
+    color: var(--color-primary);
+    background-color: transparent;
+    box-shadow: none;
+}
+.accordion-button::after {
+    background-size: 0.8rem;
+}
+
+/* 6. Typography Helpers */
+.ls-2 { letter-spacing: 2px; }
+.ls-1 { letter-spacing: 1px; }
+
+/* 7. Button Hover */
+.btn-buy {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-buy:hover {
+    transform: translateY(-2px);
+    background-color: var(--color-primary-dark);
+}
+
+
+
+/* =========================================
+   COLLECTIONS PAGE STYLING
+   ========================================= */
+
+/* 1. Custom Checkbox Style (Agar tidak biru standard) */
+.custom-check {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    transition: color 0.2s;
+}
+
+.custom-check:hover {
+    color: var(--color-primary);
+}
+
+/* Hide default checkbox */
+.custom-check input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Custom Box */
+.checkmark {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.custom-check input:checked ~ .checkmark {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-check input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* 2. Range Slider Color */
+.form-range::-webkit-slider-thumb {
+    background: var(--color-primary);
+}
+.form-range::-webkit-slider-runnable-track {
+    background: #e0e0e0;
+}
+
+/* 3. Custom Pagination (Lingkaran Emas) */
+.page-link {
+    width: 45px;
+    height: 45px;
+    color: var(--color-text);
+    border: none;
+    background-color: transparent;
+    font-weight: 600;
+    transition: all 0.3s;
+    border-radius: 50% !important; /* Make it circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 3px; /* Add spacing between bubbles */
+}
+
+/* Fix gap between "Showing results" text and buttons */
+.pagination {
+    margin-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.page-link:hover {
+    background-color: #eee;
+    color: var(--color-primary);
+    border-radius: 50% !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(200, 157, 102, 0.4);
+}
+
+.page-item.disabled .page-link {
+    color: #ccc;
+    background-color: transparent;
+}
+
+/* ========================
+   FILTER STYLING FIXES (Mobile Optimized)
+   ======================== */
+
+/* 1. Mobile Sidebar Fix (Agar Lebih Lega) */
+@media (max-width: 991px) {
+    .offcanvas-lg {
+        /* PERBAIKAN: Ubah lebar menjadi persentase agar responsif & lebih lebar */
+        width: 85% !important; /* Mengambil 85% lebar layar HP */
+        max-width: 380px; /* Batas maksimal agar tidak kegedean di Tablet */
+        
+        /* Visualisasi */
+        background-color: #ffffff !important; 
+        box-shadow: 0 0 30px rgba(0,0,0,0.15); /* Shadow lebih lembut */
+        border-right: none; /* Hapus border karena sudah ada shadow */
+    }
+    
+    /* PERBAIKAN: Padding dalam lebih besar */
+    .offcanvas-body {
+        padding: 2rem !important; /* Jarak kiri-kanan-atas lebih lega */
+        padding-bottom: 6rem !important; /* Jarak bawah ekstra aman untuk scroll */
+        gap: 2rem; /* Jarak antar grup filter (Category ke Color) lebih jauh */
+    }
+    
+    /* Header (Judul Filter & Tombol Close) */
+    .offcanvas-header {
+        padding: 1.5rem 2rem !important; /* Menyesuaikan padding body */
+    }
+}
+
+/* 2. Styling Input Harga (Unified & Clean) */
+/* Saya menggabungkan kode duplikat Anda menjadi satu blok yang rapi */
+.form-floating > .form-control {
+    height: 3.5rem; /* Tinggi 3.5rem lebih enak untuk jari (touch target) */
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--color-text);
+    border-radius: 12px;
+    background-color: #f8f9fa; /* Sedikit abu agar kontras dengan putih sidebar */
+    border: 1px solid transparent; /* Persiapan untuk focus state */
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Efek saat input diklik */
+.form-control:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(200, 157, 102, 0.15); /* Ring fokus lebih tebal & halus */
+    border-color: var(--color-primary);
+}
+
+/* 3. Menghilangkan Panah Spinner pada Input Number */
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Tombol Dropdown Utama */
+.custom-dropdown-btn {
+    background-color: #fff;
+    border-color: #eee;
+    color: var(--color-text);
+    transition: all 0.3s ease;
+}
+
+.custom-dropdown-btn:hover, 
+.custom-dropdown-btn.show { /* Saat menu terbuka */
+    border-color: var(--color-primary) !important;
+    background-color: #fff;
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+}
+
+/* Mengatur panah dropdown default bootstrap */
+.custom-dropdown-btn::after {
+    margin-left: auto; /* Dorong panah ke kanan mentok */
+    vertical-align: middle;
+    border: none;
+    /* Ganti panah segitiga default dengan Chevron SVG */
+    content: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23C89D66' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    transition: transform 0.3s ease;
+}
+
+/* Putar panah saat menu terbuka */
+.custom-dropdown-btn.show::after {
+    transform: rotate(180deg);
+}
+
+/* Styling Menu Item */
+.dropdown-item {
+    font-size: 0.95rem;
+    padding: 10px 15px;
+    color: var(--color-text);
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--color-bg-light); /* Warna background beige tipis */
+    color: var(--color-primary);
+    transform: translateX(5px); /* Efek geser dikit saat hover */
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+
+
+/* ========================
+   PAYMENT PAGE STYLING
+   ======================== */
+
+/* 1. Step Indicator Number */
+.step-circle {
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-primary) !important; /* Emas */
+    font-weight: 700;
+}
+
+/* 2. Inputs Form Styling (Konsisten dengan halaman lain) */
+.form-floating .form-control,
+.form-floating .form-select {
+    border-radius: 12px;
+    height: 3.5rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.form-floating label {
+    padding: 1rem 0.75rem;
+    color: #999;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(200, 157, 102, 0.2);
+    border: 1px solid var(--color-primary) !important;
+}
+
+/* 3. Payment Option Cards */
+.payment-option {
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.payment-option:hover {
+    border-color: var(--color-primary);
+    background-color: #fafafa;
+}
+
+/* Icon Box inside Card */
+.icon-box {
+    width: 45px; height: 45px;
+}
+
+/* Check Circle (Radio Indicator) */
+.check-circle {
+    width: 24px; height: 24px;
+    border: 2px solid #ddd;
+    transition: all 0.2s;
+    background: #fff;
+}
+
+/* STATE: ACTIVE (Selected) */
+.payment-option.active {
+    border-color: var(--color-primary);
+    background-color: rgba(200, 157, 102, 0.05); /* Emas sangat muda */
+    box-shadow: 0 4px 15px rgba(200, 157, 102, 0.1);
+}
+
+/* Ketika input radio checked, ubah style check-circle */
+.payment-option input:checked ~ .check-circle {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* 4. Sticky Summary Sidebar */
+.sticky-summary {
+    position: sticky;
+    top: 100px; /* Jarak dari atas saat scroll */
+    z-index: 10;
+}
+
+/* 5. Scrollbar halus untuk Product List */
+.overflow-auto::-webkit-scrollbar {
+    width: 4px;
+}
+.overflow-auto::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+}
+
+
+
+/* =========================================
+   PAGE: PAYMENT SUCCESS STYLES
+   ========================================= */
+
+/* 1. Wrapper Icon Checkmark */
+.success-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background-color: var(--color-primary); /* Emas BatiKa */
+    box-shadow: 0 0 0 10px rgba(200, 157, 102, 0.2); /* Ring Transparan */
+    
+    /* Animasi Pop-in */
+    animation: scaleCheck 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform: scale(0); 
+}
+
+/* 2. Card Animation (Slide Up) */
+.animate-up {
+    animation: slideUpFade 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* 3. Background Custom Box */
+.bg-light-custom {
+    background-color: #F8F6F2; /* Warna beige sangat muda agar kontras dengan card putih */
+    border: 1px solid #EFEBE5;
+}
+
+/* KEYFRAMES ANIMATION */
+
+/* Efek Membesar (Bouncing) */
+@keyframes scaleCheck {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Efek Muncul dari Bawah */
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+/* =========================================
+   PAGE: SHOPPING CART STYLES
+   ========================================= */
+
+/* 1. Item Card */
+.cart-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Sedikit efek angkat saat mouse masuk ke area item */
+.cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06) !important;
+}
+
+/* 2. Custom Quantity Input */
+.quantity-group {
+    border-color: #e0e0e0 !important;
+}
+
+.quantity-group button:hover {
+    background-color: #f8f9fa;
+    color: var(--color-primary) !important;
+}
+
+/* Hilangkan spinner bawaan browser */
+.quantity-group input[type=number]::-webkit-inner-spin-button, 
+.quantity-group input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* 3. Delete Button Hover */
+.hover-danger:hover {
+    background-color: #ffe5e5 !important;
+    color: #dc3545 !important;
+}
+
+/* 4. Link Hover Primary */
+.hov-primary:hover {
+    color: var(--color-primary) !important;
+    text-decoration: underline !important;
+}
+
+/* 5. Sticky Summary */
+.sticky-summary {
+    position: sticky;
+    top: 100px;
+    z-index: 10;
+}
+
+/* 6. Grayscale Icons (Payment logos) */
+.grayscale-icons i {
+    filter: grayscale(100%);
+    transition: filter 0.3s;
+    cursor: help;
+}
+.grayscale-icons i:hover {
+    filter: grayscale(0%);
+    color: var(--color-text);
+}
+
+/* 7. Mobile Adjustments */
+@media (max-width: 767px) {
+    /* Agar di HP gambar tidak terlalu besar tapi tetap jelas */
+    .cart-item img {
+        height: 80px;
+        width: 80px;
+    }
+    
+    /* Tombol Quantity di HP ambil lebar penuh agar mudah dipencet */
+    .quantity-group {
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+}
+
+
+
+/* =========================================
+   PAGE: USER DASHBOARD STYLES
+   ========================================= */
+
+/* 1. Sidebar Navigation (List Group Custom) */
+.list-group-item {
+    transition: all 0.2s ease;
+    color: var(--color-text-light);
+    font-weight: 500;
+}
+
+.list-group-item:hover {
+    background-color: #FAF7F3; /* Warna beige tipis */
+    color: var(--color-primary);
+    padding-left: 1.8rem !important; /* Efek geser kanan sedikit saat hover */
+}
+
+/* State Active */
+.list-group-item.active {
+    background-color: transparent !important;
+    color: var(--color-primary) !important;
+    border-left: 4px solid var(--color-primary) !important;
+    font-weight: 700;
+}
+
+/* Icon di dalam sidebar */
+.list-group-item i {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+/* 2. Dashboard Stat Icons */
+.icon-box {
+    width: 60px;
+    height: 60px;
+}
+
+/* 3. Address Card */
+.card.border-primary {
+    border: 1px solid var(--color-primary) !important;
+    background-color: #FFFCF7; /* Sedikit kuning tipis */
+}
+
+/* 4. Tab Transition Fade */
+.tab-pane {
+    transition: opacity 0.3s ease;
+}
+
+/* 5. Mobile Sidebar Scroll (Optional if needed) */
+/* Jika ingin sidebar menjadi horizontal scroll di HP */
+/* =========================================
+   UPDATE: MOBILE UX TWEAKS
+   ========================================= */
+
+@media (max-width: 767px) {
+    
+    /* 1. MODIFIKASI STATS CARD (Wishlist, dll) */
+    .mobile-scroll-container {
+        /* Tambahkan padding agar saat snap, kartu ada di tengah */
+        padding-left: 5% !important; 
+        padding-right: 5% !important;
+        
+        /* Pastikan snap behavior mulus */
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: 5%; /* Offset untuk snap */
+    }
+
+    /* Target kolom di dalam container (sebelumnya col-9) */
+    .mobile-scroll-container > div {
+        /* UBAH UKURAN: Jadi 90% lebar layar (Hampir Full) */
+        flex: 0 0 92% !important; 
+        max-width: 92% !important;
+        
+        /* Snap Position: Center agar kartu otomatis ke tengah saat berhenti scroll */
+        scroll-snap-align: center; 
+        
+        /* Sedikit jarak antar kartu */
+        margin-right: 15px; 
+    }
+    
+    /* Reset margin kanan pada elemen terakhir agar tidak ada ruang kosong aneh */
+    .mobile-scroll-container > div:last-child {
+        margin-right: 0;
+    }
+}
+
+/* 2. MODIFIKASI SCROLLBAR TAB MENU (Sidebar Mobile) */
+@media (max-width: 991px) {
+    
+    .list-group-flush {
+        padding-bottom: 10px; /* Beri jarak untuk scrollbar */
+    }
+
+    /* Style Scrollbar (Chrome, Edge, Safari) */
+    .list-group-flush::-webkit-scrollbar {
+        height: 4px; /* Tinggi scrollbar (Horizontal) */
+    }
+
+    /* Track (Jalur Scrollbar) */
+    .list-group-flush::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+        border-radius: 10px;
+        margin: 0 10px; /* Jarak kiri kanan track */
+    }
+
+    /* Thumb (Batang Scrollbar yang bergerak) */
+    .list-group-flush::-webkit-scrollbar-thumb {
+        background: #DEC5A5; /* Warna Emas Pudar */
+        border-radius: 10px;
+        transition: background 0.3s;
+    }
+
+    /* Saat discroll/hover */
+    .list-group-flush::-webkit-scrollbar-thumb:hover {
+        background: var(--color-primary); /* Warna Emas Utama */
+    }
+}
+
+
+
+
+/* =========================================
+   PAGE: ABOUT US STYLES
+   ========================================= */
+
+/* 1. Title Underline (Sesuai kode request Anda) */
+.title-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 80px; /* Panjang garis */
+    height: 4px; /* Ketebalan garis */
+    background-color: var(--color-primary); /* Warna Emas */
+    border-radius: 2px;
+}
+
+/* 2. Image Collage Wrapper */
+.image-collage {
+    padding-bottom: 30px; /* Ruang untuk gambar floating di bawah */
+}
+
+/* 3. Floating Image Effect */
+.floating-img {
+    transition: transform 0.4s ease;
+}
+
+/* Efek saat hover ke area collage, gambar kecil sedikit naik */
+.image-collage:hover .floating-img {
+    transform: translateY(-10px) !important;
+}
+
+/* 4. Responsive Adjustment */
+@media (max-width: 991px) {
+    /* Di Tablet/HP, hilangkan margin offset agar rapi */
+    .offset-lg-1 {
+        margin-left: 0 !important;
+    }
+    
+    /* Gambar utama tidak terlalu tinggi di HP */
+    .image-collage img.w-100 {
+        height: 350px !important;
+    }
+    
+    /* Sembunyikan floating image di HP jika terlalu sempit (sudah ada d-none d-md-block di HTML) */
+}
+
+/* =========================================
+   SCROLL ANIMATIONS (Framer Motion-like)
+   ========================================= */
+
+/* Base state: Hidden & pushed down */
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+}
+
+/* Base state for horizontal slide (optional variation) */
+.animate-from-left {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+.animate-from-right {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+/* Visible state */
+.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1) translateX(0); /* Reset all transforms */
+}
+
+/* Stagger Delays */
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
+.delay-600 { transition-delay: 600ms; }
