@@ -24,17 +24,33 @@
         <div class="col-12 col-lg-7">
             <div class="d-flex flex-column flex-md-row gap-3">
                 
+                <style>
+                    .thumbnail-item {
+                        transition: all 0.3s ease;
+                        opacity: 0.6;
+                    }
+                    .thumbnail-item:hover {
+                        opacity: 0.8;
+                    }
+                    .thumbnail-item.active-thumb {
+                        opacity: 1 !important;
+                        border: 2px solid var(--color-primary) !important;
+                        transform: scale(0.98);
+                    }
+                </style>
                 <div class="d-flex flex-md-column gap-3 order-2 order-md-1 overflow-auto hide-scrollbar" style="max-height: 500px;">
                     <!-- Main Thumbnail as first option -->
-                    <div class="thumbnail-item rounded-3 overflow-hidden active" 
-                            style="width: 80px; height: 100px; min-width: 80px; cursor: pointer;">
+                    <div class="thumbnail-item rounded-3 overflow-hidden active-thumb" 
+                            style="width: 80px; height: 100px; min-width: 80px; cursor: pointer;"
+                            onclick="switchImage(this, '{{ Storage::url($product->thumbnail) }}')">
                         <img src="{{ Storage::url($product->thumbnail) }}" class="w-100 h-100 object-fit-cover">
                     </div>
                     
                     <!-- Gallery Images -->
                     @foreach ($product->images as $img)
                         <div class="thumbnail-item rounded-3 overflow-hidden" 
-                             style="width: 80px; height: 100px; min-width: 80px; cursor: pointer;">
+                             style="width: 80px; height: 100px; min-width: 80px; cursor: pointer;"
+                             onclick="switchImage(this, '{{ Storage::url($img->image_path) }}')">
                             <img src="{{ Storage::url($img->image_path) }}" class="w-100 h-100 object-fit-cover">
                         </div>
                     @endforeach
@@ -46,7 +62,7 @@
                         Sale
                     </span>
                     @endif
-                    <img src="{{ Storage::url($product->thumbnail) }}" class="w-100 h-100 object-fit-cover" alt="{{ $product->name }}" style="min-height: 500px; max-height: 600px;">
+                    <img id="mainImage" src="{{ Storage::url($product->thumbnail) }}" class="w-100 h-100 object-fit-cover" alt="{{ $product->name }}" style="min-height: 500px; max-height: 600px; transition: opacity 0.3s ease;">
                 </div>
             </div>
         </div>
@@ -88,14 +104,6 @@
                 <p class="text-muted mb-4">
                     {{ $product->description }}
                 </p>
-
-                <div class="mb-4">
-                    <label class="fw-semibold mb-2 d-block small text-uppercase ls-1">Color Options</label>
-                    <div class="d-flex gap-2">
-                        <div class="color-option active rounded-circle" style="background: #5D4037;"></div>
-                        <div class="color-option rounded-circle" style="background: #C89D66;"></div>
-                    </div>
-                </div>
 
                 <form id="add-to-cart-form" action="{{ route('cart.store') }}" method="POST" class="d-flex gap-3 mb-4 align-items-stretch">
                     @csrf
@@ -373,5 +381,39 @@
     <!-- Description Section End -->
 
     <x-sweetalert-toast />
+
+    <script>
+        function switchImage(element, src) {
+            // Update Main Image
+            const mainImg = document.getElementById('mainImage');
+            mainImg.style.opacity = '0.5';
+            setTimeout(() => {
+                mainImg.src = src;
+                mainImg.style.opacity = '1';
+            }, 150);
+
+            // Update Active State
+            document.querySelectorAll('.thumbnail-item').forEach(el => el.classList.remove('active-thumb'));
+            element.classList.add('active-thumb');
+        }
+
+        function incrementQty() {
+            var input = document.getElementById('qtyInput');
+            var value = parseInt(input.value, 10);
+            value = isNaN(value) ? 0 : value;
+            value++;
+            input.value = value;
+        }
+
+        function decrementQty() {
+            var input = document.getElementById('qtyInput');
+            var value = parseInt(input.value, 10);
+            if (value > 1) {
+                value = isNaN(value) ? 0 : value;
+                value--;
+                input.value = value;
+            }
+        }
+    </script>
 </body>
 </html>

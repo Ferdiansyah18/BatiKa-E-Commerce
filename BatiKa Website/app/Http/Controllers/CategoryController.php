@@ -26,12 +26,21 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'icon' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('categories', 'public');
+        }
 
         Category::create([
             'name' => $request->name,
             'slug' => \Illuminate\Support\Str::slug($request->name),
             'icon' => $request->icon ?? 'bi-box',
+            'description' => $request->description,
+            'image' => $imagePath,
         ]);
 
         return redirect()->route('admin.categories.index')->with('success', 'Category created successfully');
@@ -47,12 +56,22 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'icon' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $imagePath = $category->image;
+        if ($request->hasFile('image')) {
+            // Optional: delete old image here if needed
+            $imagePath = $request->file('image')->store('categories', 'public');
+        }
 
         $category->update([
             'name' => $request->name,
             'slug' => \Illuminate\Support\Str::slug($request->name),
             'icon' => $request->icon ?? $category->icon,
+            'description' => $request->description,
+            'image' => $imagePath,
         ]);
 
         return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully');

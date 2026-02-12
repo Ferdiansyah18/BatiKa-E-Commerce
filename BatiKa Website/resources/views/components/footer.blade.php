@@ -63,7 +63,7 @@
 
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0 text-white-50 small">&copy; 2025 BatiKa, Inc. All rights reserved.</p>
+                    <p class="mb-0 text-white-50 small">&copy; 2026 BatiKa, Inc. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
                     <i class="bi bi-credit-card-2-front fs-4 text-white-50 mx-1"></i>

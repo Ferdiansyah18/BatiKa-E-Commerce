@@ -20,12 +20,23 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.categories.store') }}" method="POST">
+                    <form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-4">
                             <label for="name" class="form-label fw-semibold">Category Name</label>
                             <input type="text" name="name" id="name" value="{{ old('name') }}" class="form-control form-control-lg" placeholder="e.g. Handmade Bags" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Description / Story</label>
+                            <textarea name="description" id="description" rows="4" class="form-control" placeholder="Tell the story of this collection...">{{ old('description') }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label fw-semibold">Collection Image</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            <div class="form-text text-muted">Recommended size: 800x600px</div>
                         </div>
 
                         <div class="mb-5">

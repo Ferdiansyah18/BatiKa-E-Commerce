@@ -118,4 +118,16 @@ class ProductController extends Controller
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully');
     }
+
+    public function destroyImage(\App\Models\ProductImage $productImage)
+    {
+        // Delete file from storage
+        if ($productImage->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($productImage->image_path)) {
+             \Illuminate\Support\Facades\Storage::disk('public')->delete($productImage->image_path);
+        }
+        
+        $productImage->delete();
+        
+        return back()->with('success', 'Image deleted successfully');
+    }
 }

@@ -35,6 +35,21 @@
 /* =========================================
    3. GLOBAL STYLES & UTILITIES
    ========================================= */
+/* Hide Scrollbar Globally */
+html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
 body {
     background-color: var(--color-bg);
     font-family: var(--font-body);
@@ -55,8 +70,110 @@ a {
 .text-primary { color: var(--color-primary) !important; }
 .bg-light-custom { background-color: var(--color-bg-light) !important; }
 
+/* Override Bootstrap Primary Button */
+.btn-primary {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: #fff !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+    background-color: var(--color-primary-dark) !important;
+    border-color: var(--color-primary-dark) !important;
+    color: #fff !important;
+}
+
+/* Override Bootstrap Outline Primary Button */
+.btn-outline-primary {
+    color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: #fff !important;
+}
+
 /* Utility: Helper Opacity */
 .opacity-10 { opacity: 0.1 !important; }
+
+/* --------------------------------------
+   FULLSCREEN MENU STYLES
+   -------------------------------------- */
+.fullscreen-menu {
+    background-color: #1a1a1a;
+}
+
+.menu-link-large {
+    font-size: 4rem; /* Sesuaikan ukuran */
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: #fff;
+    /* transition: color 0.3s ease; REMOVED to avoid conflict/flash */
+    display: inline-flex; /* Align image and text better */
+    align-items: center;
+}
+
+.menu-link-large:hover {
+    color: var(--color-primary);
+    -webkit-text-stroke: 1px var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .menu-link-large {
+        font-size: 2.5rem;
+    }
+}
+
+/* Burger Icon Animation */
+.burger-icon {
+    width: 30px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.burger-icon span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-primary); /* Gold to match Logo */
+    transition: all 0.3s ease;
+}
+
+/* White Icon variant (Override to keep Gold for consistency & visibility on all backgrounds) */
+.burger-icon.white-icon span {
+    background-color: var(--color-primary) !important;
+}
+
+/* Active State (X shape) */
+/* Active State (X shape) symmetry fix */
+.burger-icon.open span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+    background-color: #fff;
+}
+.burger-icon.open span:nth-child(2) {
+    transform: translateY(-9px) rotate(-45deg);
+    background-color: #fff;
+}
+
+/* Override Bootstrap navbar toggler styles */
+.navbar-toggler { display: none !important; } 
+
+/* Override Bootstrap Checkbox & Radio Color */
+.form-check-input:checked {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.form-check-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem rgba(200, 157, 102, 0.25); /* Gold with opacity */
+} 
 
 /* Utility: Transition */
 .transition-all { transition: all 0.3s ease; }
@@ -115,6 +232,29 @@ a {
 }
 
 /* Navbar Underline Animation */
+.toggler-white .navbar-toggler-icon {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    transition: filter 0.3s ease;
+}
+
+.navbar-glass.scrolled .toggler-white .navbar-toggler-icon {
+    filter: none !important;
+}
+
+.navbar-glass.scrolled .nav-link,
+.navbar-glass.scrolled .navbar-brand,
+.navbar-glass.scrolled .nav-icon {
+    color: var(--color-text) !important;
+}
+
+.navbar-glass.scrolled .navbar-brand {
+    color: var(--color-primary) !important;
+}
+
+.transition-colors {
+    transition: color 0.3s ease;
+}
+
 .nav-link::after {
     content: '';
     position: absolute;
@@ -157,8 +297,7 @@ a {
     transform: scale(1.05);
     box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
     border-color: var(--color-primary) !important;
-}
-
+} 
 /* FIX MOBILE MENU: 
    Saat di HP, jika tombol menu diklik, background harus jadi putih 
    supaya tulisan menu terbaca jelas. */

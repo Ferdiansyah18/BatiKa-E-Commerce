@@ -54,7 +54,7 @@
             <p>This code is valid for 10 minutes. <br>If you did not request this code, please ignore this email.</p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} BatiKa. All rights reserved.</p>
+            <p>&copy; 2026 BatiKa, Inc. All rights reserved.</p>
         </div>
     </div>
 </body>

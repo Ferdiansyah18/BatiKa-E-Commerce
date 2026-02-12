@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BatiKa | Shop Collections</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .active-ring {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+    </style>
 </head>
 <body style="background-color: var(--color-bg);">
 
@@ -23,7 +29,9 @@
                 <i class="bi bi-sliders me-2"></i> Filter
             </button>
             
-            <span class="text-muted d-none d-lg-block">Showing 1-9 of 24 results</span>
+            <span class="text-muted d-none d-lg-block">
+                Showing {{ $products->firstItem() ?? 0 }}-{{ $products->lastItem() ?? 0 }} of {{ $products->total() }} results
+            </span>
 
 <div class="d-flex align-items-center gap-2">
     <span class="text-muted small d-none d-md-block">Sort by:</span>
@@ -33,14 +41,14 @@
                 type="button" 
                 data-bs-toggle="dropdown" 
                 aria-expanded="false">
-            Newest Arrivals
+            {{ request('sort') ? ucfirst(str_replace('_', ' ', request('sort'))) : 'Newest Arrivals' }}
         </button>
         
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2" style="min-width: 200px;">
-            <li><a class="dropdown-item active rounded-3 mb-1" href="#">Newest Arrivals</a></li>
-            <li><a class="dropdown-item rounded-3 mb-1" href="#">Price: Low to High</a></li>
-            <li><a class="dropdown-item rounded-3 mb-1" href="#">Price: High to Low</a></li>
-            <li><a class="dropdown-item rounded-3" href="#">Popularity</a></li>
+            <li><a class="dropdown-item rounded-3 mb-1 {{ request('sort') == 'newest' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'newest']) }}">Newest Arrivals</a></li>
+            <li><a class="dropdown-item rounded-3 mb-1 {{ request('sort') == 'price_asc' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'price_asc']) }}">Price: Low to High</a></li>
+            <li><a class="dropdown-item rounded-3 mb-1 {{ request('sort') == 'price_desc' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'price_desc']) }}">Price: High to Low</a></li>
+            <li><a class="dropdown-item rounded-3 {{ request('sort') == 'oldest' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'oldest']) }}">Oldest</a></li>
         </ul>
     </div>
 </div>
@@ -58,118 +66,110 @@
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterSidebar" aria-label="Close"></button>
                     </div>
 
-                    <div class="offcanvas-body p-0 d-flex flex-column gap-4">
-                        
-                        <div class="filter-group">
-                            <h6 class="fw-bold mb-3 ls-1 text-uppercase small">Categories</h6>
-                            <div class="d-flex flex-column gap-2">
-                                <label class="custom-check d-flex align-items-center justify-content-between cursor-pointer">
-                                    <span>Tote Bags</span>
-                                    <input type="checkbox" checked>
-                                    <span class="checkmark"></span>
-                                    <small class="text-muted">(12)</small>
-                                </label>
-                                <label class="custom-check d-flex align-items-center justify-content-between cursor-pointer">
-                                    <span>Clutches</span>
-                                    <input type="checkbox">
-                                    <span class="checkmark"></span>
-                                    <small class="text-muted">(8)</small>
-                                </label>
-                                <label class="custom-check d-flex align-items-center justify-content-between cursor-pointer">
-                                    <span>Backpacks</span>
-                                    <input type="checkbox">
-                                    <span class="checkmark"></span>
-                                    <small class="text-muted">(4)</small>
-                                </label>
+                    <form action="{{ route('collections') }}" method="GET" id="filterForm">
+                        @if(request('sort'))
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                        @endif
+
+                        <div class="offcanvas-body p-0 d-flex flex-column gap-4">
+                            
+                            {{-- Categories Filter --}}
+                            <div class="filter-group">
+                                <h6 class="fw-bold mb-3 ls-1 text-uppercase small">Categories</h6>
+                                <div class="d-flex flex-column gap-2">
+                                    @foreach($categories as $category)
+                                    <label class="custom-check d-flex align-items-center justify-content-between cursor-pointer">
+                                        <span>{{ $category->name }}</span>
+                                        <input type="checkbox" name="categories[]" value="{{ $category->id }}" 
+                                            {{ in_array($category->id, request('categories', [])) ? 'checked' : '' }}
+                                            onchange="this.form.submit()">
+                                        <span class="checkmark"></span>
+                                        <small class="text-muted">({{ $category->products_count }})</small>
+                                    </label>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
 
-                        <hr class="border-secondary opacity-25 my-0">
+                            <hr class="border-secondary opacity-25 my-0">
 
-                        <div class="filter-group">
-                            <h6 class="fw-bold mb-3 ls-1 text-uppercase small">Colors</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <div class="color-option active rounded-circle" style="background: #5D4037;" title="Brown"></div>
-                                <div class="color-option rounded-circle" style="background: #1A1A1A;" title="Black"></div>
-                                <div class="color-option rounded-circle" style="background: #C89D66;" title="Gold"></div>
-                                <div class="color-option rounded-circle" style="background: #8D6E63;" title="Taupe"></div>
-                                <div class="color-option rounded-circle border bg-white" title="White"></div>
+                            {{-- Price Filter --}}
+                            <div class="filter-group">
+                                <h6 class="fw-bold mb-3 ls-1 text-uppercase small">Price Range</h6>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ request('min_price') }}">
+                                    <span>-</span>
+                                    <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ request('max_price') }}">
+                                </div>
+                                <button type="submit" class="btn btn-dark btn-sm w-100 mt-2">Apply</button>
                             </div>
+
                         </div>
-
-                        <hr class="border-secondary opacity-25 my-0">
-
-                        <div class="filter-group">
-                            <h6 class="fw-bold mb-3 ls-1 text-uppercase small">Price</h6>
-                            <input type="range" class="form-range" min="0" max="500" id="priceRange" style="color: var(--color-primary);">
-                            <div class="d-flex justify-content-between small fw-bold text-dark mt-2">
-                                <span>$0</span>
-                                <span>$500+</span>
-                            </div>
-                        </div>
-
-                    </div>
+                    </form>
                 </div>
             </div>
 
             <div class="col-12 col-lg-9">
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
                     
-                    @for ($i = 0; $i < 9; $i++)
+                    @forelse ($products as $product)
                     <div class="col">
                         <div class="product-card card border-0 rounded-4 overflow-hidden h-100">
                             
                             <div class="product-image-wrapper position-relative overflow-hidden bg-light">
-                                @if($i === 0 || $i === 3)
+                                {{-- Badges Logic --}}
+                                @if($product->is_featured)
+                                    <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 z-2">Featured</span>
+                                @elseif($product->created_at->diffInDays(now()) < 7)
                                     <span class="badge bg-danger position-absolute top-0 start-0 m-3 z-2">New</span>
-                                @elseif($i === 2)
-                                    <span class="badge bg-dark position-absolute top-0 start-0 m-3 z-2">Sold Out</span>
                                 @endif
-                                
-                                <img src="{{ asset('images/tas-1.jpg') }}" class="card-img-top w-100" alt="Product Name">
+
+                                {{-- Image --}}
+                                <img src="{{ Storage::url($product->thumbnail) }}" class="card-img-top w-100" alt="{{ $product->name }}">
                                 
                                 <div class="overlay-actions d-none d-lg-flex justify-content-center align-items-center gap-2">
-                                    <a href="#" class="btn btn-light rounded-circle shadow-sm icon-btn" title="Add to Cart">
-                                        <i class="bi bi-cart-plus text-dark"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-light rounded-circle shadow-sm icon-btn" title="View Details">
+                                    {{-- Add to Cart Form (Optional: can be added later) --}}
+                                    <a href="{{ route('product.detail', $product->slug) }}" class="btn btn-light rounded-circle shadow-sm icon-btn" title="View Details">
                                         <i class="bi bi-eye text-dark"></i>
                                     </a>
                                 </div>
-                                <a href="#" class="stretched-link d-lg-none"></a>
+                                <a href="{{ route('product.detail', $product->slug) }}" class="stretched-link d-lg-none"></a>
                             </div>
     
                             <div class="card-body text-center p-4">
                                 <div class="text-warning small mb-2">
-                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                    @php
+                                        $rating = $product->reviews_avg_rating ?? 0;
+                                    @endphp
+                                    @for($i=1; $i<=5; $i++)
+                                        <i class="bi bi-star{{ $i <= round($rating) ? '-fill' : '' }}"></i>
+                                    @endfor
+                                    <span class="text-muted ms-1">({{ $product->reviews_count ?? 0 }})</span>
                                 </div>
                                 <h5 class="card-title fw-bold mb-1">
-                                    <a href="#" class="text-decoration-none text-dark d-none d-lg-block stretched-link">Batik Tote {{ $i+1 }}</a>
-                                    <span class="d-lg-none text-dark">Batik Tote {{ $i+1 }}</span>
+                                    <a href="{{ route('product.detail', $product->slug) }}" class="text-decoration-none text-dark d-none d-lg-block stretched-link">{{ $product->name }}</a>
+                                    <span class="d-lg-none text-dark">{{ $product->name }}</span>
                                 </h5>
-                                <p class="text-muted small mb-2">Premium Series</p>
-                                <h4 class="text-primary fw-bold mb-0">$120.00</h4>
+                                <p class="text-muted small mb-2">{{ $product->category->name ?? 'Collection' }}</p>
+                                
+                                @if($product->discount_price)
+                                    <h4 class="text-primary fw-bold mb-0">Rp {{ number_format($product->discount_price, 0, ',', '.') }}</h4>
+                                    <small class="text-decoration-line-through text-muted">Rp {{ number_format($product->price, 0, ',', '.') }}</small>
+                                @else
+                                    <h4 class="text-primary fw-bold mb-0">Rp {{ number_format($product->price, 0, ',', '.') }}</h4>
+                                @endif
                             </div>
                         </div>
                     </div>
-                    @endfor
+                    @empty
+                    <div class="col-12 py-5 text-center">
+                        <p class="text-muted">No products found.</p>
+                    </div>
+                    @endforelse
 
                 </div>
 
                 <div class="mt-5 d-flex justify-content-center">
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination gap-2">
-                            <li class="page-item disabled">
-                                <a class="page-link rounded-circle d-flex align-items-center justify-content-center" href="#" tabindex="-1"><i class="bi bi-chevron-left"></i></a>
-                            </li>
-                            <li class="page-item active"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link rounded-circle d-flex align-items-center justify-content-center" href="#">3</a></li>
-                            <li class="page-item">
-                                <a class="page-link rounded-circle d-flex align-items-center justify-content-center" href="#"><i class="bi bi-chevron-right"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
+                    {!! $products->links() !!}
                 </div>
 
             </div>

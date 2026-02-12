@@ -47,11 +47,11 @@
                                 <span class="badge bg-light text-dark border">{{ $product->category->name }}</span>
                             </td>
                             <td class="px-4 py-3 fw-bold">
-                                ${{ number_format($product->price, 2) }}
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3">
                                 @if($product->discount_price)
-                                    <div><span class="text-danger fw-bold">${{ number_format($product->discount_price, 2) }}</span></div>
+                                    <div><span class="text-danger fw-bold">Rp {{ number_format($product->discount_price, 0, ',', '.') }}</span></div>
                                     <div class="small text-muted" style="font-size: 0.75rem;">
                                         Until {{ $product->discount_end_date ? $product->discount_end_date->format('M d') : 'Forever' }}
                                     </div>
@@ -64,10 +64,10 @@
                                     <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-sm btn-outline-primary rounded-circle" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
                                         <i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
                                     </a>
-                                    <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                    <form id="delete-product-{{ $product->id }}" action="{{ route('admin.products.destroy', $product) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                        <button type="button" onclick="confirmDelete('delete-product-{{ $product->id }}')" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
                                             <i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i>
                                         </button>
                                     </form>
@@ -87,4 +87,21 @@
 
         </div>
     </div>
+    <script>
+        function confirmDelete(formId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#C89D66',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            })
+        }
+    </script>
 </x-app-layout>

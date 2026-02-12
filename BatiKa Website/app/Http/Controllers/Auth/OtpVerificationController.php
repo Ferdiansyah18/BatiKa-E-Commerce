@@ -92,6 +92,7 @@ class OtpVerificationController extends Controller
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone' => $data['phone'],
             'password' => $data['password'],
             'email_verified_at' => now(),
         ]);
@@ -103,6 +104,6 @@ class OtpVerificationController extends Controller
         $request->session()->forget('registration_data');
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('home', absolute: false));
     }
 }

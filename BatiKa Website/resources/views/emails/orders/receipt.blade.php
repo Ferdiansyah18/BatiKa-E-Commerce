@@ -65,7 +65,7 @@
             </p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} BatiKa. All rights reserved.</p>
+            <p>&copy; 2026 BatiKa, Inc. All rights reserved.</p>
         </div>
     </div>
 </body>

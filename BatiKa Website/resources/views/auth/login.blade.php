@@ -1,73 +1,121 @@
 <x-guest-layout>
-    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-        <div class="card shadow p-5" style="width: 420px; border-radius: 16px;">
-
-            {{-- Title --}}
-            <h3 class="text-center fw-bold mb-4">Welcome Back</h3>
-
-            {{-- Session Status --}}
-            @if (session('status'))
-                <div class="alert alert-success small">{{ session('status') }}</div>
-            @endif
-
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-
-                {{-- Email --}}
-                <div class="mb-3">
-                    <label for="email" class="form-label">{{ __('Email Address') }}</label>
-                    <input id="email" type="email" name="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}" required autofocus autocomplete="username">
-
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+    <div class="container-fluid min-vh-100 p-0">
+        <div class="row min-vh-100 g-0">
+            
+            {{-- Left Side: Image & Branding --}}
+            <div class="col-lg-6 d-none d-lg-block position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100" 
+                     style="background-image: url('{{ asset('images/login-new.jpg') }}'); background-size: cover; background-position: center;">
                 </div>
-
-                {{-- Password --}}
-                <div class="mb-3">
-                    <label for="password" class="form-label">{{ __('Password') }}</label>
-                    <input id="password" type="password" name="password"
-                        class="form-control @error('password') is-invalid @enderror"
-                        required autocomplete="current-password">
-
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                {{-- Dark Overlay --}}
+                <div class="position-absolute top-0 start-0 w-100 h-100" 
+                     style="background: linear-gradient(135deg, rgba(82, 60, 40, 0.85), rgba(46, 32, 28, 0.9));">
                 </div>
-
-                {{-- Remember Me --}}
-                <div class="mb-3 form-check">
-                    <input id="remember" type="checkbox" name="remember" class="form-check-input">
-                    <label for="remember" class="form-check-label small">
-                        {{ __('Remember me') }}
-                    </label>
+                
+                {{-- Content Over Image --}}
+                <div class="position-relative z-1 h-100 d-flex flex-column justify-content-center px-5 text-white">
+                    <h1 class="display-3 fw-bold mb-3">BatiKa.</h1>
+                    <p class="fs-4 fw-light ls-1">Modern Minimalism meets Heritage.</p>
+                    <div class="mt-4" style="width: 80px; height: 3px; background-color: #C89D66;"></div>
                 </div>
-
-                {{-- Actions --}}
-                <div class="d-flex justify-content-between align-items-center">
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="text-decoration-none small text-muted">
-                            {{ __('Forgot your password?') }}
-                        </a>
-                    @endif
-
-                    <button type="submit" class="btn btn-dark px-4 py-2 fw-semibold">
-                        {{ __('Log in') }}
-                    </button>
-                </div>
-
-            </form>
-
-            {{-- Footer --}}
-            <div class="text-center mt-4 small">
-                {{ __("Don't have an account?") }}
-                <a href="{{ route('register') }}" class="text-decoration-none fw-semibold">
-                    Create Account
-                </a>
             </div>
 
+            {{-- Right Side: Login Form --}}
+            <div class="col-lg-6 d-flex justify-content-center align-items-center bg-white">
+                <div class="w-100 p-5 p-lg-5" style="max-width: 500px;">
+                    
+                    {{-- Mobile Branding (Visible only on smaller screens) --}}
+                    <div class="text-center mb-4 d-lg-none">
+                        <h2 class="fw-bold" style="color: var(--color-primary);">BatiKa</h2>
+                    </div>
+
+                    <div class="text-start mb-5">
+                        <h2 class="fw-bold text-dark">Welcome Back</h2>
+                        <p class="text-muted">Please enter your details to sign in.</p>
+                    </div>
+
+                    {{-- Session Status --}}
+                    @if (session('status'))
+                        <div class="alert alert-success small mb-4">{{ session('status') }}</div>
+                    @endif
+
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+
+                        {{-- Email --}}
+                        <div class="form-floating mb-4">
+                            <input type="email" class="form-control rounded-4" id="email" name="email" placeholder="name@example.com" value="{{ old('email') }}" required autofocus autocomplete="username">
+                            <label for="email">Email Address</label>
+                            @error('email')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Password --}}
+                        <div class="form-floating mb-4 position-relative">
+                            <input type="password" class="form-control rounded-4" id="password" name="password" placeholder="Password" required autocomplete="current-password" style="padding-right: 40px;">
+                            <label for="password">Password</label>
+                            <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('password', this)">
+                                <i class="bi bi-eye text-muted"></i>
+                            </span>
+                            @error('password')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Remember & Forgot --}}
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" id="remember_me">
+                                <label class="form-check-label text-muted small" for="remember_me">
+                                    Remember me
+                                </label>
+                            </div>
+                            @if (Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="small fw-semibold text-decoration-none" style="color: var(--color-primary);">
+                                    Forgot password?
+                                </a>
+                            @endif
+                        </div>
+
+                        {{-- Login Button --}}
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm mb-4">
+                            Sign In
+                        </button>
+
+                        {{-- Divider --}}
+                        <div class="position-relative text-center mb-4">
+                            <hr class="text-muted opacity-25">
+                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">OR</span>
+                        </div>
+
+                        {{-- Register Link --}}
+                        <div class="text-center">
+                            <span class="text-muted small">Don't have an account?</span>
+                            <a href="{{ route('register') }}" class="fw-bold text-decoration-none ms-1" style="color: var(--color-primary);">
+                                Create account
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+        function togglePassword(inputId, element) {
+            const input = document.getElementById(inputId);
+            const icon = element.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
 </x-guest-layout>

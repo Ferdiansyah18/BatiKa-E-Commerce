@@ -31,8 +31,13 @@
                         <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 48px; height: 48px;">
                             <i class="bi bi-currency-dollar fs-4"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">
-                            <i class="bi bi-arrow-up-short"></i> {{ $stats['revenue_growth'] }}%
+                        @php
+                            $revGrowth = $stats['revenue_growth'];
+                            $revColor = $revGrowth >= 0 ? 'success' : 'danger';
+                            $revIcon = $revGrowth >= 0 ? 'arrow-up-short' : 'arrow-down-short';
+                        @endphp
+                        <span class="badge bg-{{ $revColor }} bg-opacity-10 text-{{ $revColor }} rounded-pill px-2 py-1">
+                            <i class="bi bi-{{ $revIcon }}"></i> {{ abs($revGrowth) }}%
                         </span>
                     </div>
                     <div>
@@ -51,8 +56,13 @@
                         <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 48px; height: 48px;">
                             <i class="bi bi-basket fs-4"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">
-                            <i class="bi bi-arrow-up-short"></i> {{ $stats['orders_growth'] }}%
+                        @php
+                            $ordGrowth = $stats['orders_growth'];
+                            $ordColor = $ordGrowth >= 0 ? 'success' : 'danger';
+                            $ordIcon = $ordGrowth >= 0 ? 'arrow-up-short' : 'arrow-down-short';
+                        @endphp
+                        <span class="badge bg-{{ $ordColor }} bg-opacity-10 text-{{ $ordColor }} rounded-pill px-2 py-1">
+                            <i class="bi bi-{{ $ordIcon }}"></i> {{ abs($ordGrowth) }}%
                         </span>
                     </div>
                     <div>
@@ -94,7 +104,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted text-uppercase small ls-1 mb-1">Total Customers</h6>
-                        <h3 class="fw-bold fs-4 mb-0">1,240</h3>
+                        <h3 class="fw-bold fs-4 mb-0">{{ number_format($stats['total_customers']) }}</h3>
                     </div>
                 </div>
             </div>
@@ -184,31 +194,35 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush pt-2">
-                        @foreach($feedback as $item)
+                        @forelse($feedback as $item)
                         <div class="list-group-item border-0 px-4 py-3">
                             <div class="d-flex align-items-start gap-3">
                                 <div class="bg-primary bg-opacity-10 rounded-circle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
-                                    <span class="fw-bold">{{ $item['avatar'] }}</span>
+                                    <span class="fw-bold">{{ substr($item->user->name ?? 'A', 0, 1) }}</span>
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="mb-0 fw-semibold fs-6">{{ $item['customer_name'] }}</h6>
-                                        <span class="text-muted small" style="font-size: 0.75rem;">{{ $item['date'] }}</span>
+                                        <h6 class="mb-0 fw-semibold fs-6">{{ $item->user->name ?? 'Anonymous' }}</h6>
+                                        <span class="text-muted small" style="font-size: 0.75rem;">{{ $item->created_at->diffForHumans() }}</span>
                                     </div>
                                     <div class="mb-1 text-warning small">
-                                        @for($i = 0; $i < $item['rating']; $i++) <i class="bi bi-star-fill"></i> @endfor
-                                        @for($i = $item['rating']; $i < 5; $i++) <i class="bi bi-star text-muted opacity-25"></i> @endfor
+                                        @for($i = 0; $i < $item->rating; $i++) <i class="bi bi-star-fill"></i> @endfor
+                                        @for($i = $item->rating; $i < 5; $i++) <i class="bi bi-star text-muted opacity-25"></i> @endfor
                                     </div>
                                     <p class="mb-1 text-muted small text-truncate" style="max-width: 200px;">
-                                        "{{ $item['comment'] }}"
+                                        "{{ $item->comment }}"
                                     </p>
                                     <div class="small fw-medium text-primary bg-primary bg-opacity-10 rounded px-2 py-1 d-inline-block">
-                                        {{ $item['product_name'] }}
+                                        {{ $item->product->name ?? 'Product' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                        @empty
+                        <div class="list-group-item border-0 px-4 py-3 text-center text-muted">
+                            No feedback available yet.
+                        </div>
+                        @endforelse
                     </div>
                 </div>
     

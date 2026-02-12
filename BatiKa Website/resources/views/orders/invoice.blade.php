@@ -178,7 +178,7 @@
                 <p class="fw-bold text-dark mb-1">Thank you for shopping with BatiKa!</p>
                 <p class="text-muted small mb-0">If you have any questions about this invoice, please contact support@batika.com</p>
                 <div class="mt-4 pt-4 border-top">
-                     <small class="text-muted">BatiKa E-Commerce &copy; {{ date('Y') }}</small>
+                     <small class="text-muted">BatiKa, Inc. &copy; 2026. All rights reserved.</small>
                 </div>
             </div>
         </div>

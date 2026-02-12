@@ -54,17 +54,17 @@
                             <h5 class="fw-bold text-primary mb-4 pb-2 border-bottom">Pricing & Discount</h5>
                             <div class="row g-4">
                                 <div class="col-md-6 col-lg-3">
-                                    <label for="price" class="form-label fw-semibold">Price ($)</label>
+                                    <label for="price" class="form-label fw-semibold">Price (Rp)</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light">$</span>
-                                        <input type="number" step="0.01" name="price" id="price" value="{{ old('price', $product->price) }}" class="form-control" required>
+                                        <span class="input-group-text bg-light">Rp</span>
+                                        <input type="number" name="price" id="price" value="{{ old('price', intval($product->price)) }}" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-lg-3">
-                                    <label for="discount_price" class="form-label fw-semibold">Discount Price ($)</label>
+                                    <label for="discount_price" class="form-label fw-semibold">Discount Price (Rp)</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light">$</span>
-                                        <input type="number" step="0.01" name="discount_price" id="discount_price" value="{{ old('discount_price', $product->discount_price) }}" class="form-control">
+                                        <span class="input-group-text bg-light">Rp</span>
+                                        <input type="number" name="discount_price" id="discount_price" value="{{ old('discount_price', $product->discount_price ? intval($product->discount_price) : '') }}" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-lg-3">
@@ -126,9 +126,17 @@
 
                                 <div class="col-md-6">
                                     <label for="images" class="form-label fw-semibold">Gallery Images</label>
-                                    <div class="mb-3 d-flex gap-2 bg-light p-3 rounded-3 overflow-auto">
+                                    <div class="mb-3 d-flex gap-3 bg-light p-3 rounded-3 overflow-auto">
                                         @forelse($product->images as $img)
-                                             <img src="{{ Storage::url($img->image_path) }}" class="rounded border bg-white" style="height: 80px; width: 80px; object-fit: cover;">
+                                            <div class="position-relative d-inline-block shadow-sm rounded overflow-hidden" style="width: 80px; height: 80px;">
+                                                <img src="{{ Storage::url($img->image_path) }}" class="w-100 h-100 object-fit-cover">
+                                                <button type="button" 
+                                                        onclick="confirmDelete('delete-img-{{ $img->id }}')"
+                                                        class="btn btn-danger p-0 position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-0" 
+                                                        style="width: 24px; height: 24px; opacity: 0.9;">
+                                                    <i class="bi bi-trash-fill" style="font-size: 12px;"></i>
+                                                </button>
+                                            </div>
                                         @empty
                                             <span class="text-muted small">No gallery images yet.</span>
                                         @endforelse
@@ -151,4 +159,28 @@
             </div>
         </div>
     </div>
+    <!-- Hidden Delete Forms -->
+    @foreach($product->images as $img)
+        <form id="delete-img-{{ $img->id }}" action="{{ route('admin.product-images.destroy', $img->id) }}" method="POST" class="d-none">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endforeach
+    <script>
+        function confirmDelete(formId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#C89D66',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            })
+        }
+    </script>
 </x-app-layout>

@@ -33,13 +33,13 @@
 
         {{-- Footer --}}
         <footer class="text-center py-4 mt-auto small text-muted">
-            &copy; {{ date('Y') }} BatiKa. All rights reserved.
+            &copy; 2026 BatiKa, Inc. All rights reserved.
         </footer>
 
     </div>
 
     {{-- Bootstrap JS (If not handled by app.js yet, keep CDN or remove if handled) --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- Bootstrap JS (Handled by app.js) --}}
     @stack('scripts')
     <!-- SweetAlert Toast Script -->
     <x-sweetalert-toast />

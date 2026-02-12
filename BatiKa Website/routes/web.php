@@ -12,15 +12,17 @@ Route::get('/', function () {
         ->withAvg('reviews', 'rating')
         ->withCount('reviews')
         ->get();
-    return view('home', compact('featuredProducts'));
+        
+    $categories = \App\Models\Category::take(3)->get(); // For "Our Collections"
+
+    return view('home', compact('featuredProducts', 'categories'));
 })->name('home');
 
 Route::get('/product/{product:slug}', [\App\Http\Controllers\ShopController::class, 'show'])
     ->name('product.detail');
 
-Route::get('/collections', function() {
-    return view('pages.collections');
-});
+Route::get('/collections', [\App\Http\Controllers\ShopController::class, 'index'])->name('collections');
+Route::get('/collections/{category:slug}', [\App\Http\Controllers\ShopController::class, 'showCollection'])->name('collections.show');
 
 Route::get('/payment', function() {
     $checkoutItemIds = session('checkout_item_ids', []);
@@ -135,6 +137,7 @@ Route::middleware('auth')->group(function () {
 });
     Route::prefix('admin')->name('admin.')->middleware(['role:admin|owner'])->group(function(){
         Route::resource('products', ProductController::class);
+        Route::delete('/product-images/{productImage}', [ProductController::class, 'destroyImage'])->name('product-images.destroy');
         Route::resource('categories',CategoryController::class);
         Route::resource('orders', \App\Http\Controllers\OrderController::class);
     });

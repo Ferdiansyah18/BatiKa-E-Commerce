@@ -53,17 +53,17 @@
                             <h5 class="fw-bold text-primary mb-4 pb-2 border-bottom">Pricing & Discount</h5>
                             <div class="row g-4">
                                 <div class="col-md-6 col-lg-3">
-                                    <label for="price" class="form-label fw-semibold">Price ($)</label>
+                                    <label for="price" class="form-label fw-semibold">Price (Rp)</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light">$</span>
-                                        <input type="number" step="0.01" name="price" id="price" value="{{ old('price') }}" class="form-control" required>
+                                        <span class="input-group-text bg-light">Rp</span>
+                                        <input type="number" name="price" id="price" value="{{ old('price') }}" class="form-control" placeholder="e.g. 150000" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-lg-3">
-                                    <label for="discount_price" class="form-label fw-semibold">Discount Price ($)</label>
+                                    <label for="discount_price" class="form-label fw-semibold">Discount Price (Rp)</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light">$</span>
-                                        <input type="number" step="0.01" name="discount_price" id="discount_price" value="{{ old('discount_price') }}" class="form-control">
+                                        <span class="input-group-text bg-light">Rp</span>
+                                        <input type="number" name="discount_price" id="discount_price" value="{{ old('discount_price') }}" class="form-control" placeholder="e.g. 125000">
                                     </div>
                                     <small class="text-muted">Optional. Must be lower than price.</small>
                                 </div>

@@ -20,13 +20,29 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.categories.update', $category) }}" method="POST">
+                    <form action="{{ route('admin.categories.update', $category) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
                         <div class="mb-4">
                             <label for="name" class="form-label fw-semibold">Category Name</label>
                             <input type="text" name="name" id="name" value="{{ old('name', $category->name) }}" class="form-control form-control-lg" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Description / Story</label>
+                            <textarea name="description" id="description" rows="4" class="form-control" placeholder="Tell the story of this collection...">{{ old('description', $category->description) }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label fw-semibold">Collection Image</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            @if($category->image)
+                                <div class="mt-2">
+                                    <img src="{{ Storage::url($category->image) }}" alt="Current Image" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            @endif
+                            <div class="form-text text-muted">Recommended size: 800x600px</div>
                         </div>
 
                         <div class="mb-5">
