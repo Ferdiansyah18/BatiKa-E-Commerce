@@ -1,4 +1,5 @@
-🧺 BatiKa — E-Commerce Batik Indonesia
+
+#🧺 BatiKa — E-Commerce Batik Indonesia#
 ​BatiKa adalah platform e-commerce berbasis web yang dirancang khusus untuk mempromosikan dan mempermudah transaksi jual-beli produk kain serta busana Batik khas Nusantara. Platform ini menghadirkan pengalaman berbelanja modern, responsif, dan intuitif bagi para pencinta warisan budaya Indonesia.
 ​🚀 Fitur Utama
 ​Katalog Produk & Detail Batik: Penjelajahan produk batik berdasarkan kategori, jenis kain, motif, dan rentang harga.
