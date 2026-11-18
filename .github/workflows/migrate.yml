@@ -6,7 +6,7 @@ name: Database migrations
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   APP_KEY, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
 # Optional:
-#   DB_SSL_CA_BASE64 (base64 of the MySQL provider CA certificate)
+#   DB_SSL_CA_BASE64 (base64 of the root CA; for TiDB Cloud use ISRG Root X1)
 
 on:
   workflow_dispatch:

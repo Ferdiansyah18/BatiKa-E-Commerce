@@ -10,9 +10,9 @@ define('LARAVEL_START', microtime(true));
 |--------------------------------------------------------------------------
 |
 | Vercel runs the application from a read-only container filesystem. Database
-| providers such as Aiven require TLS and hand out a CA certificate that
-| normally lives on disk. Accept it as a base64 encoded environment variable
-| and materialise it in the writable temporary directory instead.
+| providers that use a private CA hand out a certificate file that normally
+| lives on disk. Accept it as a base64 encoded environment variable and
+| materialise it in the writable temporary directory instead.
 |
 */
 

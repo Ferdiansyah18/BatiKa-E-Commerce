@@ -6,7 +6,7 @@ Dokumen ini menjelaskan cara men-deploy aplikasi **BatiKa** (Laravel 11) ke **Ve
 >
 > - Seluruh aplikasi (frontend **dan** backend) berjalan sebagai satu container Laravel di Vercel.
 > - **Firebase tidak bisa menjadi backend/database** untuk Laravel: Cloud Functions tidak mendukung PHP, dan Firestore (NoSQL) tidak kompatibel dengan Eloquent/MySQL. Jadi Firebase dipakai untuk **Storage** (gambar), sesuai kesepakatan.
-> - Database memakai **MySQL terkelola** (Aiven/Railway/TiDB), bukan Firebase.
+> - Database memakai **MySQL terkelola** (TiDB Cloud Starter), bukan Firebase.
 
 ---
 
@@ -26,8 +26,9 @@ Dokumen ini menjelaskan cara men-deploy aplikasi **BatiKa** (Laravel 11) ke **Ve
         │                           │
         ▼                           ▼
 ┌──────────────────┐      ┌─────────────────────┐
-│  MySQL (Aiven)   │      │ Firebase Storage    │
-│  data & session  │      │ gambar produk/avatar│
+│  MySQL           │      │ Firebase Storage    │
+│  (TiDB Cloud)    │      │ gambar produk/avatar│
+│  data & session  │      │                     │
 └──────────────────┘      └─────────────────────┘
 ```
 
@@ -49,6 +50,7 @@ File yang ditambahkan untuk deployment:
 
 - Akun **Vercel** (sudah punya).
 - Akun **Firebase** (sudah punya).
+- Akun **TiDB Cloud** — gratis dan tanpa kartu kredit (dibuat di langkah 3).
 - Akses push ke repo GitHub `Ferdiansyah18/BatiKa-E-Commerce`.
 - Repo sudah berisi perubahan deployment ini (commit & push dulu).
 - **Node.js** (untuk membuat `APP_KEY`). Tidak wajib memasang Docker atau Composer di komputer.
@@ -57,36 +59,69 @@ File yang ditambahkan untuk deployment:
 
 ## 3. Siapkan database MySQL
 
-Pilih salah satu penyedia. Contoh di bawah memakai **Aiven for MySQL (free plan)** karena paling mudah dan gratis.
+Yang dibutuhkan adalah MySQL **gratis permanen** (bukan trial 7–30 hari). Rekomendasi: **TiDB Cloud Starter** — protokolnya kompatibel dengan MySQL, kuota gratis diperbarui setiap bulan, dan pendaftarannya tidak memerlukan kartu kredit.
 
-### 3.1 Buat service MySQL di Aiven
+| Penyedia | Kuota gratis permanen | Kartu kredit | Catatan |
+|---|---|---|---|
+| **TiDB Cloud Starter** (disarankan) | 5 GiB data + 5 GiB columnar + 50 juta Request Unit per instance/bulan, maksimal 5 instance | Tidak | MySQL 8 compatible, TLS wajib, ada integrasi Vercel |
+| filess.io (Hobby) | 2 database × 10 MB | Tidak | MySQL asli, tetapi 10 MB terlalu sempit untuk sesi + cache + katalog |
+| db4free.net | ±200 MB | Tidak | Untuk uji coba saja, tanpa jaminan uptime |
+| Oracle Cloud Always Free | 1 instance MySQL HeatWave kecil | Ya (verifikasi) | Lebih rumit, kartu kredit diminta saat daftar |
 
-1. Masuk ke <https://console.aiven.io>.
-2. **Create service** → pilih **MySQL**.
-3. Pilih plan **Free**, region terdekat (mis. `Singapore`), lalu **Create service**.
-4. Tunggu sampai status **Running**.
-5. Buka tab **Overview**, catat **Connection information**:
-   - `Host`
-   - `Port`
-   - `User` (biasanya `avnadmin`)
-   - `Password`
-   - `Database name` (biasanya `defaultdb`)
-6. Di bagian **CA Certificate**, klik **Download** untuk mengunduh file `ca.pem`.
-7. Ubah base64 file CA tersebut:
+> ⚠️ **Aiven tidak lagi menyediakan plan MySQL gratis** (plan termurah mulai $5/bulan). Bagian Aiven pada versi lama dokumen ini sudah tidak berlaku.
+> Railway dan Render juga hanya memberi kredit trial, bukan free tier permanen.
 
-   **Windows PowerShell**
-   ```powershell
-   [Convert]::ToBase64String([IO.File]::ReadAllBytes("ca.pem")) | Set-Clipboard
-   ```
+### 3.1 Buat database di TiDB Cloud Starter
 
-   **macOS / Linux**
-   ```bash
-   base64 -i ca.pem | tr -d '\n'
-   ```
+1. Buka <https://tidbcloud.com/free-trial>, lalu daftar dengan GitHub/Google/email.
+2. **Create Cluster** → pilih **Starter** → region terdekat (mis. `Singapore / ap-southeast-1`) → **Create**.
+3. Tunggu sampai status **Active** (±1–2 menit). Tidak perlu mengisi kartu kredit.
+4. Klik **Connect** di pojok kanan atas, biarkan **Connection Type = Public**, lalu catat:
+   - **Host**: `gateway01.ap-southeast-1.prod.aws.tidbcloud.com` (format `gateway01.<region>.prod.aws.tidbcloud.com`)
+   - **Port**: `4000`
+   - **User**: `<prefix>.root`, mis. `3Km9aBcD.root`. **Prefix wajib disertakan**, kalau tidak koneksi ditolak.
+   - **Password**: klik **Generate Password** lalu simpan (hanya tampil sekali)
+   - **Database**: `test`
+5. Izinkan akses jaringan: **Settings → Networking → Public Endpoint → Add IP rule** → isi `0.0.0.0/0`. IP keluar Vercel berubah-ubah, jadi allowlist per-IP tidak praktis.
+6. TLS: TiDB Cloud mewajibkan koneksi TLS, tetapi sertifikatnya diterbitkan Let's Encrypt (CA publik). PHP `mysqlnd` baru mengaktifkan TLS bila ada opsi `ssl_ca`, jadi **isi** `DB_SSL_CA_BASE64` dengan sertifikat **ISRG Root X1** (langkah 3.2 no. 2). Koneksi tetap tervalidasi, bukan mode "tanpa verifikasi".
 
-   Simpan hasilnya — akan dipakai sebagai `DB_SSL_CA_BASE64`.
+> Kompatibilitas: TiDB mendukung foreign key (GA sejak v8.5) dan collation `utf8mb4_0900_ai_ci`, jadi migrasi Laravel berjalan tanpa perubahan kode.
 
-> Alternatif penyedia MySQL: **Railway** (MySQL), **TiDB Cloud Serverless**, atau MySQL dari penyedia lain. Jika penyedia tidak mewajibkan TLS, `DB_SSL_CA_BASE64` boleh dikosongkan.
+### 3.2 Siapkan CA certificate
+
+**1. Jika penyedia memberi file `ca.pem` sendiri** (CA internal):
+
+**Windows PowerShell**
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("ca.pem")) | Set-Clipboard
+```
+
+**macOS / Linux**
+```bash
+base64 -i ca.pem | tr -d '\n'
+```
+
+**2. Untuk TiDB Cloud** — ambil root certificate Let's Encrypt (ISRG Root X1):
+
+**Windows PowerShell**
+```powershell
+$pem = "$env:TEMP\isrgrootx1.pem"
+Invoke-WebRequest -Uri "https://letsencrypt.org/certs/isrgrootx1.pem" -OutFile $pem
+[Convert]::ToBase64String([IO.File]::ReadAllBytes($pem)) | Set-Clipboard
+```
+
+**macOS / Linux**
+```bash
+curl -sO https://letsencrypt.org/certs/isrgrootx1.pem && base64 -i isrgrootx1.pem | tr -d '\n'
+```
+
+Simpan hasilnya sebagai `DB_SSL_CA_BASE64` (satu baris tanpa spasi/enter). Nilai yang sama dipakai di Vercel dan di GitHub Secrets.
+
+### 3.3 Uji koneksi (opsional)
+
+```bash
+mysql -h <host> -P 4000 -u "<prefix>.root" -p --ssl-mode=REQUIRED -e "SELECT VERSION();"
+```
 
 ---
 
@@ -155,10 +190,13 @@ Jalankan salah satu perintah berikut, lalu simpan hasilnya:
 node -e "console.log('base64:' + require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-atau PowerShell:
+atau **Windows PowerShell** (kompatibel dengan PowerShell 5.1):
 
 ```powershell
-"base64:" + [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+$b = New-Object byte[] 32
+$r = [Security.Cryptography.RNGCryptoServiceProvider]::new()
+$r.GetBytes($b); $r.Dispose()
+"base64:" + [Convert]::ToBase64String($b)
 ```
 
 Contoh hasil: `base64:8Xh...=`
@@ -203,12 +241,12 @@ Buka **Project → Settings → Environment Variables**, lalu tambahkan satu per
 | Name | Value |
 |---|---|
 | `DB_CONNECTION` | `mysql` |
-| `DB_HOST` | host dari Aiven |
-| `DB_PORT` | port dari Aiven |
-| `DB_DATABASE` | `defaultdb` |
-| `DB_USERNAME` | `avnadmin` |
-| `DB_PASSWORD` | password dari Aiven |
-| `DB_SSL_CA_BASE64` | hasil base64 `ca.pem` (opsional jika provider tidak butuh TLS) |
+| `DB_HOST` | host TiDB Cloud (langkah 3.1) |
+| `DB_PORT` | `4000` |
+| `DB_DATABASE` | `test` |
+| `DB_USERNAME` | `<prefix>.root` dari TiDB Cloud |
+| `DB_PASSWORD` | password dari TiDB Cloud |
+| `DB_SSL_CA_BASE64` | base64 ISRG Root X1 (langkah 3.2 no. 2) — wajib agar TLS aktif di PHP |
 
 ### 7.3 Session, cache, queue
 
@@ -355,7 +393,7 @@ Endpoint callback sudah dikecualikan dari CSRF di `bootstrap/app.php`, sehingga 
 |---|---|
 | Halaman 502 / container gagal start | Cek **Deployments → Logs**. Biasanya `APP_KEY` kosong atau port tidak sesuai. Pastikan `Caddyfile` memakai `:{$PORT:80}`. |
 | `No application encryption key has been specified` | `APP_KEY` belum diisi di Vercel, atau Anda mengubah env tanpa redeploy. Tambahkan lalu redeploy. |
-| Error koneksi database / SSL | Pastikan `DB_SSL_CA_BASE64` benar (base64 dari `ca.pem` tanpa karakter baru). Cek juga IP allowlist penyedia database. Jika muncul error verifikasi sertifikat, tambahkan env `MYSQL_ATTR_SSL_VERIFY_SERVER_CERT=false` (koneksi tetap terenkripsi, hanya verifikasi sertifikat dimatikan). |
+| Error koneksi database / SSL | Cek `DB_HOST`, `DB_PORT` (TiDB: `4000`), dan `DB_USERNAME` harus lengkap dengan prefix (`<prefix>.root`). Pastikan IP rule di **Settings → Networking** mengizinkan `0.0.0.0/0`. `DB_SSL_CA_BASE64` wajib berisi ISRG Root X1 (base64, satu baris). Jika masih muncul error verifikasi sertifikat, set `MYSQL_ATTR_SSL_VERIFY_SERVER_CERT=false` (koneksi tetap terenkripsi, hanya verifikasi sertifikat dimatikan). |
 | Gambar produk rusak / 404 | Bucket Firebase belum public. Periksa **Storage → Rules** dan pastikan `allow read: if true`. Pastikan `FIREBASE_STORAGE_BUCKET` sama persis dengan nama bucket. |
 | `Class "Google\Cloud\Storage\StorageClient" not found` | Dependency belum terpasang. Pastikan `composer.lock` ikut ter-commit dan build Docker berhasil. |
 | Gambar hilang setelah beberapa menit | Berarti unggahan masih tersimpan di disk lokal, bukan Firebase. Pastikan `FILESYSTEM_DISK=public` dan env Firebase terisi. |
@@ -372,7 +410,9 @@ Endpoint callback sudah dikecualikan dari CSRF di `bootstrap/app.php`, sehingga 
 | Layanan | Plan | Catatan |
 |---|---|---|
 | Vercel | Hobby | Container runtime (Beta), aktif saat ada trafik, scale-to-zero |
-| Aiven MySQL | Free | ±1 GB storage, koneksi TLS wajib |
+| TiDB Cloud Starter | Free | 5 GiB data + 5 GiB columnar + 50 juta RU per instance/bulan (maks. 5 instance); kuota direset tiap bulan |
 | Firebase Storage | Spark (gratis) | 5 GB storage, 1 GB download/hari |
 
 Jika trafik naik, pertimbangkan upgrade plan database terlebih dahulu karena koneksi MySQL biasanya menjadi bottleneck.
+
+> Jika kuota Request Unit TiDB habis sebelum akhir bulan, instance otomatis di-throttle (tidak ditagih) sampai kuota direset tanggal 1. Untuk demo/tugas ini tidak menjadi masalah.
