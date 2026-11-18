@@ -20,20 +20,20 @@ class RolePermissionSeeder extends Seeder
 
         // Create Owner
         $owner = User::firstOrCreate(
-            ['email' => 'hafiz@dausinternasionalhospital.com'],
+            ['email' => env('SEED_OWNER_EMAIL', 'hafiz@dausinternasionalhospital.com')],
             [
-                'name' => 'Hafiz Firdaus S.Kom Pemilik',
-                'password' => bcrypt('daus123')
+                'name' => env('SEED_OWNER_NAME', 'Hafiz Firdaus S.Kom Pemilik'),
+                'password' => bcrypt(env('SEED_OWNER_PASSWORD', 'daus123'))
             ]
         );
         $owner->assignRole($ownerRole);
 
         // Create Admin
         $admin = User::firstOrCreate(
-            ['email' => 'admin@batika.com'],
+            ['email' => env('SEED_ADMIN_EMAIL', 'admin@batika.com')],
             [
-                'name' => 'Admin BatiKa',
-                'password' => bcrypt('password')
+                'name' => env('SEED_ADMIN_NAME', 'Admin BatiKa'),
+                'password' => bcrypt(env('SEED_ADMIN_PASSWORD', 'password'))
             ]
         );
         $admin->assignRole($adminRole);

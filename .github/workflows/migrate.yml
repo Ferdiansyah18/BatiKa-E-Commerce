@@ -1,0 +1,72 @@
+name: Database migrations
+
+# Run this workflow manually from the GitHub UI:
+#   Actions → Database migrations → Run workflow
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   APP_KEY, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+# Optional:
+#   DB_SSL_CA_BASE64 (base64 of the MySQL provider CA certificate)
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Run database seeders after migrating (creates roles, categories and the default owner/admin accounts)"
+        type: boolean
+        default: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: "BatiKa Website"
+
+    env:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${{ secrets.APP_KEY }}
+      DB_CONNECTION: mysql
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      SEED_OWNER_EMAIL: ${{ secrets.SEED_OWNER_EMAIL }}
+      SEED_OWNER_NAME: ${{ secrets.SEED_OWNER_NAME }}
+      SEED_OWNER_PASSWORD: ${{ secrets.SEED_OWNER_PASSWORD }}
+      SEED_ADMIN_EMAIL: ${{ secrets.SEED_ADMIN_EMAIL }}
+      SEED_ADMIN_NAME: ${{ secrets.SEED_ADMIN_NAME }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: bcmath, gd, intl, pdo_mysql, zip
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Prepare database TLS certificate
+        env:
+          DB_SSL_CA_BASE64: ${{ secrets.DB_SSL_CA_BASE64 }}
+        run: |
+          if [ -n "$DB_SSL_CA_BASE64" ]; then
+            echo "$DB_SSL_CA_BASE64" | base64 -d > "$RUNNER_TEMP/db-ca.pem"
+            echo "MYSQL_ATTR_SSL_CA=$RUNNER_TEMP/db-ca.pem" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Seed database
+        if: ${{ inputs.seed }}
+        run: php artisan db:seed --force

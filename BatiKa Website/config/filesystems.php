@@ -1,5 +1,44 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Firebase Storage credentials
+|--------------------------------------------------------------------------
+|
+| On serverless platforms there is no persistent, writable disk to keep the
+| service account JSON file. Instead we accept the JSON as a base64 encoded
+| environment variable and decode it at runtime.
+|
+*/
+
+$firebaseCredentials = null;
+
+if ($encodedCredentials = env('FIREBASE_CREDENTIALS_BASE64')) {
+    $decodedCredentials = base64_decode($encodedCredentials, true);
+
+    if ($decodedCredentials !== false) {
+        $firebaseCredentials = json_decode($decodedCredentials, true) ?: null;
+    }
+}
+
+$useFirebaseStorage = $firebaseCredentials && env('FIREBASE_STORAGE_BUCKET');
+
+$publicDisk = $useFirebaseStorage
+    ? [
+        'driver' => 'firebase',
+        'project_id' => env('FIREBASE_PROJECT_ID') ?? ($firebaseCredentials['project_id'] ?? null),
+        'bucket' => env('FIREBASE_STORAGE_BUCKET'),
+        'credentials' => $firebaseCredentials,
+        'throw' => false,
+    ]
+    : [
+        'driver' => 'local',
+        'root' => storage_path('app/public'),
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+        'throw' => false,
+    ];
+
 return [
 
     /*
@@ -13,7 +52,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'public'),
 
     /*
     |--------------------------------------------------------------------------
@@ -36,13 +75,13 @@ return [
             'throw' => false,
         ],
 
-        'public' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
-            'visibility' => 'public',
-            'throw' => false,
-        ],
+        /*
+         * BatiKa stores every upload on the "public" disk, and every view
+         * reads it back through Storage::url(). In production this disk is
+         * backed by Firebase Storage; locally it falls back to the normal
+         * storage/app/public directory.
+         */
+        'public' => $publicDisk,
 
         's3' => [
             'driver' => 's3',
